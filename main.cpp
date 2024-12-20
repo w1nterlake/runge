@@ -4,17 +4,17 @@
 #include <fstream>
 
 void fcn(double t, double lambda, double *X, double *f){
-    // f[0] = (1 - lambda * t * t - X[0] * X[0]);
-    // f[1] = X[1];
+    f[1] = (1 - lambda * t * t - X[0] * X[0]);
     f[0] = X[1];
-    f[1] = (1 - X[0] * X[0]) * X[1] - X[0];
+    // f[0] = X[1];
+    // f[1] = (1 - X[0] * X[0]) * X[1] - X[0];
 
 }
 
 
 bool runge(int N, double t_0, double *X, double t_end, double tol, double lambda){
     std::ofstream fout1, fout2, fout3, fout4;
-    fout1.open("first.txt");
+    fout1.open("a1.txt");
     fout2.open("second.txt");
     // fout3.open("third.txt");
     // fout4.open("fourth.txt");
@@ -23,6 +23,8 @@ bool runge(int N, double t_0, double *X, double t_end, double tol, double lambda
     int const size = N * 6;
     double K[size];
     int i = 0;
+    double err_glob = 0;
+    double tmp = 0;
     double fac = 0;
     double h_new;
     const double facmax = 2.5;   
@@ -70,6 +72,8 @@ bool runge(int N, double t_0, double *X, double t_end, double tol, double lambda
                     error += er_loc[i] * er_loc[i];
 	}
         error = sqrt(error);
+        double l = 1 > 4 * X_tmp[0] * X_tmp[0] ? 1 : 4 * X_tmp[0] * X_tmp[0];
+        tmp = error + tmp * exp(l * h);
         fac = fmax(fmin(pow(error / tol, (1. / 5.)) / safety_factor, facmax), facmin);
         h_new = h / fac;
         if(error <= tol){
@@ -77,10 +81,16 @@ bool runge(int N, double t_0, double *X, double t_end, double tol, double lambda
             for(i = 0; i < N; i++){
                 X[i] = X_tmp[i];
             }
-            fout1 << t_0 << " " << X[0] << "\n";
-            fout2 << t_0 << " " << X[1] << "\n";
+            err_glob = tmp;
+            // fout1 << t_0 << " " << X[0] << "\n";
+            // fout2 << t_0 << " " << X[1] << "\n";
             // fout3 << t_0 << " " << X[2] << "\n";
             // fout4 << t_0 << " " << X[3] << "\n";
+            // std::cout << "t = " << t_0 << ", ";
+            // for(i = 0; i < N; i++){
+            //     std::cout << "X" << i << " = " << X[i] << ", ";
+            // }
+            // std::cout << "h = " << h << "\n";
             // std::cout << "t = " << t_0 << ", ";
             // for(i = 0; i < N; i++){
             //     std::cout << "X" << i << " = " << X[i] << ", ";
@@ -102,9 +112,10 @@ bool runge(int N, double t_0, double *X, double t_end, double tol, double lambda
             for(i = 0; i < N; i++){
                 std::cout << "X" << i << " = " << X[i] << ", ";
             }
-            std::cout << "h = " << h << "\n";
-    // std::cout << "N accepted = " << N_accepted << "\n";
-    // std::cout << "N rejected = " << N_rejected << "\n";
+            std::cout << "h = " << h << ", ";
+            std::cout << "errglob = " << err_glob << "\n";
+    std::cout << "N accepted = " << N_accepted << "\n";
+    std::cout << "N rejected = " << N_rejected << "\n";
     fout1.close();
     fout2.close();
     // fout3.close();
@@ -114,16 +125,16 @@ bool runge(int N, double t_0, double *X, double t_end, double tol, double lambda
 
 int main(){
     std::ofstream fout;
-    fout.open("text1.txt");
-    double time;
+    fout.open("new1.txt");
+    long double time;
     double t_0 = 0;
     int N = 2;
     double X[N];
-    X[0] = 2;
-    X[1] = 0;
+    X[0] = 0;
+    X[1] = 1;
     // X[2] = 0;
     // X[3] = sqrt(3);
-    double t_end = 20;
+    double t_end = 1;
     double tol = 2e-16;
     double lambda = 2.795;
     time = clock();
@@ -144,7 +155,7 @@ int main(){
     //     X[1] = 1;
     // }
 
-    runge(N, t_0, X, t_end, tol, 0);
+    runge(N, t_0, X, t_end, tol, 17.1878);
     time = (clock() - time) / CLOCKS_PER_SEC;
     std::cout << "time = " << time;
     fout.close();

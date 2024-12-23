@@ -2,6 +2,7 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
+#include <iomanip>
 
 void fcn(double t, double lambda, double *X, double *f){
     f[1] = (1 - lambda * t * t - X[0] * X[0]);
@@ -154,8 +155,54 @@ int main(){
     //     X[0] = 0;
     //     X[1] = 1;
     // }
+    double X_tmp1[N];
+    double X_tmp2[N];
+    double tmp1, tmp2;
+    double a = 17, b = 18;
+    long double mid = (a + b) / 2;
+    double delta = 0;
+    std::cout << std::fixed;
+    std::cout << std::setprecision(10);
+    while(true){
+        runge(N, t_0, X_tmp2, t_end, 1e-7, mid);
+        runge(N, t_0, X_tmp1, t_end, 1e-9, mid);
+        tmp1 = X_tmp1[0];
+        tmp2 = X_tmp2[0];
+        X_tmp2[0] = 0;
+        X_tmp2[1] = 1;
+        X_tmp1[0] = 0;
+        X_tmp1[1] = 1;
+        runge(N, t_0, X_tmp2, t_end, tol, mid + 0.0001);
+        runge(N, t_0, X_tmp1, t_end, tol, mid - 0.0001);
+        runge(N, t_0, X, t_end, tol, mid);
+        double q = ((pow(10, -7. * 4./5) - pow(10, -9. * 4./5.)) * (X_tmp2[0] - X_tmp1[0]));
+        double p = 2 * 0.0001 * (tmp2 - tmp1) * pow(tol, 4./5.);
+        delta = p / q;
+        X_tmp2[0] = 0;
+        X_tmp2[1] = 1;
+        X_tmp1[0] = 0;
+        X_tmp1[1] = 1;
+        if(fabs(a - b) < fabs(delta)){
+            std::cout << mid << "\n";
+            break;
+        }
+        else{
+            if(X[0] < 0){
+                b = mid;
+                mid = (a + b)/2;
+            }
+            else{
+                a = mid;
+                mid = (a + b)/2;
+            }
+        }
+        X[0] = 0;
+        X[1] = 1;
+    }
 
-    runge(N, t_0, X, t_end, tol, 17.1878);
+    X[0] = 0;
+    X[1] = 1;
+    runge(N, t_0, X, t_end, tol, mid);
     time = (clock() - time) / CLOCKS_PER_SEC;
     std::cout << "time = " << time;
     fout.close();
